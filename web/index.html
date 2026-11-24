@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>agent inference kit: price, route, cap and prove agent inference spend</title>
+<meta name="description" content="Small open-source tools for agents that pay for inference: one price table, price alerts, a router with caps, spend caps, a cost proxy for coding agents, an x402 quote check, and Flop receipt proofs. Sorted by job, each with a one-line npx command.">
+<script>document.documentElement.dataset.theme = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';</script>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="arc/foundation.css">
+<link rel="stylesheet" href="arc/badge.css">
+<link rel="stylesheet" href="styles.css">
+<script type="importmap">{ "imports": { "justweight/core": "./lib/justweight-core.mjs" } }</script>
+</head>
+<body>
+<main>
+  <header>
+    <h1>agent inference kit</h1>
+    <p class="lede">Small tools for agents that pay for their own inference. Each does one job, runs with one <code>npx</code> line, and works with the others. All MIT, all read-only or local by default, none holds your keys.</p>
+    <p class="muted"><a href="https://github.com/xbtMelchizedek/agent-inference-kit">GitHub</a> · List: <a href="https://github.com/xbtMelchizedek/agent-inference-kit/blob/main/kit.json">kit.json</a> · <span id="snapnote">Loading live numbers from justweight…</span></p>
+  </header>
+  <nav class="actions" id="jobnav" aria-label="Jobs"></nav>
+  <div id="jobs"></div>
+  <section class="panel">
+    <h2>Traction</h2>
+    <p class="muted" id="tracnote"></p>
+    <div class="wrap"><table id="trac"></table></div>
+  </section>
+  <section class="panel">
+    <h2>Add a tool</h2>
+    <p class="muted">One pull request to <a href="https://github.com/xbtMelchizedek/agent-inference-kit/blob/main/kit.json">kit.json</a>: an id, the repo, a one-line summary, the <code>npx -y github:…</code> command and which job it belongs to. CI checks the entry; this page and <code>npx -y github:xbtMelchizedek/agent-inference-kit</code> pick it up. Each tool's README links here instead of copying the list.</p>
+  </section>
+</main>
+<script type="module" src="app.js"></script>
+</body>
+</html>

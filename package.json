@@ -1,0 +1,18 @@
+{
+  "name": "agent-inference-kit",
+  "version": "0.1.0",
+  "description": "The agent inference kit in one place: small tools for pricing, routing, capping and proving agent inference spend, sorted by job, each with a one-line npx command and a live number from justweight.",
+  "keywords": ["agents", "inference", "llm", "mcp", "x402", "flop", "budget", "pricing", "openrouter"],
+  "homepage": "https://xbtmelchizedek.github.io/agent-inference-kit/",
+  "repository": { "type": "git", "url": "git+https://github.com/xbtMelchizedek/agent-inference-kit.git" },
+  "bugs": { "url": "https://github.com/xbtMelchizedek/agent-inference-kit/issues" },
+  "author": "xbtMelchizedek",
+  "license": "MIT",
+  "type": "module",
+  "exports": { ".": "./src/index.mjs", "./kit.json": "./kit.json", "./package.json": "./package.json" },
+  "bin": { "agent-inference-kit": "src/cli.mjs" },
+  "files": ["src", "kit.json", "README.md", "CHANGELOG.md", "LICENSE"],
+  "engines": { "node": ">=22" },
+  "scripts": { "test": "node --test test/*.test.mjs", "prepublishOnly": "npm test" },
+  "dependencies": { "justweight": "github:xbtMelchizedek/justweight#v0.4.0" }
+}

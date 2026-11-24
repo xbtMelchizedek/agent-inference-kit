@@ -1,0 +1,114 @@
+{
+  "version": 1,
+  "name": "agent inference kit",
+  "page": "https://xbtmelchizedek.github.io/agent-inference-kit/",
+  "snapshot": "https://xbtmelchizedek.github.io/justweight/data/snapshot.json",
+  "jobs": [
+    {
+      "id": "prices",
+      "title": "Know what inference costs",
+      "tools": [
+        "justweight",
+        "agent-price-feed"
+      ]
+    },
+    {
+      "id": "route",
+      "title": "Route one call to the cheapest venue",
+      "tools": [
+        "justweight-infer"
+      ]
+    },
+    {
+      "id": "spend",
+      "title": "Spend without overspending",
+      "tools": [
+        "agent-spendcap",
+        "agent-cost-proxy",
+        "x402-price-check"
+      ]
+    },
+    {
+      "id": "flop",
+      "title": "Prove and track Flop compute spend",
+      "tools": [
+        "flop-receipt-root",
+        "flop-spend"
+      ]
+    }
+  ],
+  "tools": [
+    {
+      "id": "justweight",
+      "name": "justweight",
+      "repo": "xbtMelchizedek/justweight",
+      "page": "https://xbtmelchizedek.github.io/justweight/",
+      "summary": "One price table for every inference venue (Flop, Pearl, Venice, Chutes, each OpenRouter provider, local) in one unit, each price linked to its source.",
+      "run": "npx -y github:xbtMelchizedek/justweight tiers",
+      "metric": "offers"
+    },
+    {
+      "id": "agent-price-feed",
+      "name": "agent-price-feed",
+      "repo": "xbtMelchizedek/agent-price-feed",
+      "page": "https://xbtmelchizedek.github.io/agent-price-feed/",
+      "summary": "Alerts by JSON Feed, RSS, CLI and MCP when those prices move, a cheaper route appears, or Flop lists a model.",
+      "run": "npx -y github:xbtMelchizedek/agent-price-feed events --kind price-drop,cheapest-change",
+      "metric": "models"
+    },
+    {
+      "id": "justweight-infer",
+      "name": "justweight infer",
+      "repo": "xbtMelchizedek/justweight",
+      "page": "https://github.com/xbtMelchizedek/justweight#infer-route-one-call-with-caps-and-a-receipt",
+      "summary": "An MCP tool that routes one call to the cheapest venue meeting your privacy floor, under hard spend caps, and returns chained receipts.",
+      "run": "npx -y -p github:xbtMelchizedek/justweight justweight-mcp",
+      "metric": "cheapest-route"
+    },
+    {
+      "id": "agent-spendcap",
+      "name": "agent-spendcap",
+      "repo": "xbtMelchizedek/agent-spendcap",
+      "page": "https://xbtmelchizedek.github.io/agent-spendcap/",
+      "summary": "A budget policy for agents: holds before each call, settlement from real usage, a hash-chained ledger, and a drop-in fetch for OpenAI-compatible APIs.",
+      "run": "curl -s https://raw.githubusercontent.com/xbtMelchizedek/agent-spendcap/main/examples/policy.json | npx -y github:xbtMelchizedek/agent-spendcap authorize --policy /dev/stdin --venue openrouter:pearl-research/fp8 --model qwen/qwen3.8-27b --usd 0.004 --privacy no-retention",
+      "metric": "calls-per-dollar"
+    },
+    {
+      "id": "agent-cost-proxy",
+      "name": "agent-cost-proxy",
+      "repo": "xbtMelchizedek/agent-cost-proxy",
+      "page": "https://xbtmelchizedek.github.io/agent-cost-proxy/",
+      "summary": "One command, a local proxy for coding agents (Claude Code, Codex, Hermes) that records each call's real cost and the cheapest listed price for the same tokens, with optional caps.",
+      "run": "npx -y github:xbtMelchizedek/agent-cost-proxy",
+      "metric": "spread"
+    },
+    {
+      "id": "x402-price-check",
+      "name": "x402-price-check",
+      "repo": "xbtMelchizedek/x402-price-check",
+      "page": "https://xbtmelchizedek.github.io/x402-price-check/",
+      "summary": "Checks an x402 402 quote against justweight list prices and your agent-spendcap budget before an agent pays. Never signs or pays.",
+      "run": "npx -y github:xbtMelchizedek/x402-price-check demo",
+      "metric": "x402-ceiling"
+    },
+    {
+      "id": "flop-receipt-root",
+      "name": "flop-receipt-root",
+      "repo": "xbtMelchizedek/flop-receipt-root",
+      "page": "https://xbtmelchizedek.github.io/flop-receipt-root/",
+      "summary": "Proves a Flop compute settlement to an EVM contract without a bridge, and checks one receipt offline.",
+      "run": "npx -y github:xbtMelchizedek/flop-receipt-root build --network devnet --last 3600 --out epoch.json",
+      "metric": "flop-prices"
+    },
+    {
+      "id": "flop-spend",
+      "name": "flop-spend",
+      "repo": "xbtMelchizedek/flop-spend",
+      "page": "https://xbtmelchizedek.github.io/flop-spend/",
+      "summary": "Has an address spent on Flop inference yet? Settled spend per address, re-read on chain, as a CLI, MCP tool and dashboard.",
+      "run": "npx -y github:xbtMelchizedek/flop-spend has-spent 5GsXb3TmNGixuEsbtixqHnqWr9UQJ2M8bkqBQWteNekgF98S",
+      "metric": "flop-watch"
+    }
+  ]
+}
