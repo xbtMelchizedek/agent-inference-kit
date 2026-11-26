@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Add an offline `--markdown` CLI table generated from `kit.json` and check that it matches the README.
+
 ## 0.1.0 (2026-11-24)
 
 First release.

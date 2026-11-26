@@ -10,18 +10,40 @@ const VERSION = JSON.parse(readFileSync(new URL('../package.json', import.meta.u
 const HELP = `agent-inference-kit ${VERSION}: small tools for pricing, routing, capping and proving agent inference spend
 
   agent-inference-kit [job]            the tools by job, with live numbers from justweight (jobs: ${KIT.jobs.map((j) => j.id).join(', ')})
+  agent-inference-kit [job] --markdown  a Markdown tool table, without live numbers
   agent-inference-kit --json           the same as JSON
   agent-inference-kit --offline        skip the live numbers
   agent-inference-kit traction [--out file.json]   stars, forks, watchers per repo; views and clones too if GITHUB_TOKEN can read them
 
 Page: ${KIT.page}`;
 
+const tableCell = (value) => value.replaceAll('|', '\\|');
+const inlineCode = (value) => {
+  const delimiter = '`'.repeat(1 + Math.max(0, ...Array.from(value.matchAll(/`+/g), (m) => m[0].length)));
+  return delimiter + (value.includes('`') ? ' ' + tableCell(value) + ' ' : tableCell(value)) + delimiter;
+};
+
+function markdownTable(jobs) {
+  const tools = Object.fromEntries(KIT.tools.map((tool) => [tool.id, tool]));
+  const lines = ['| Job | Tool | One line |', '|---|---|---|'];
+  for (const job of jobs) {
+    for (const [index, id] of job.tools.entries()) {
+      const tool = tools[id];
+      const repo = `https://github.com/${tool.repo}`;
+      const link = tool.page.startsWith(repo + '#') ? tool.page : repo;
+      lines.push(`| ${index === 0 ? tableCell(job.title) : ''} | [${tableCell(tool.name)}](${link}) | ${inlineCode(tool.run)} |`);
+    }
+  }
+  return lines.join('\n');
+}
+
 export async function main(argv, { out = console.log, env = process.env, fetchImpl = globalThis.fetch } = {}) {
   try {
     const flags = new Set(argv.filter((a) => a.startsWith('--')));
     const args = argv.filter((a) => !a.startsWith('--'));
-    for (const f of flags) if (!['--json', '--offline', '--help', '--out'].includes(f)) throw new Error(`unknown option ${f}`);
+    for (const f of flags) if (!['--json', '--markdown', '--offline', '--help', '--out'].includes(f)) throw new Error(`unknown option ${f}`);
     if (flags.has('--help') || args[0] === 'help') { out(HELP); return 0; }
+    if (flags.has('--markdown') && flags.has('--json')) throw new Error('--markdown and --json cannot be combined');
     if (args[0] === 'traction') {
       const i = argv.indexOf('--out');
       const t = await traction(reposOf(KIT), { token: env.GITHUB_TOKEN || undefined, fetchImpl });
@@ -31,6 +53,7 @@ export async function main(argv, { out = console.log, env = process.env, fetchIm
     }
     const jobs = args[0] ? KIT.jobs.filter((j) => j.id === args[0]) : KIT.jobs;
     if (!jobs.length) throw new Error(`unknown job ${args[0]} (jobs: ${KIT.jobs.map((j) => j.id).join(', ')})`);
+    if (flags.has('--markdown')) { out(markdownTable(jobs)); return 0; }
     let snap = null; let metrics = {}; let note = 'live numbers skipped (--offline)';
     if (!flags.has('--offline')) {
       try {
