@@ -72,3 +72,22 @@ test('the bin runs through a symlink (as npx does)', () => {
   assert.equal(r.status, 0, r.stderr);
   assert.match(r.stdout, /justweight infer/);
 });
+
+test('--markdown matches the README tool table and needs no snapshot', async () => {
+  let fetches = 0;
+  const noFetch = async () => { fetches++; throw new Error('unexpected fetch'); };
+  const result = await run(['--markdown'], { fetchImpl: noFetch });
+  assert.equal(result.code, 0);
+  const readme = readFileSync(new URL('../README.md', import.meta.url), 'utf8');
+  const table = readme.split('## The tools\n')[1].trimStart().split('\n\n')[0];
+  assert.equal(result.out, table);
+  assert.ok(result.out.includes('json \\| npx'));
+  assert.match(result.out, /has-spent 5Gs/);
+
+  const filtered = await run(['route', '--markdown'], { fetchImpl: noFetch });
+  assert.equal(filtered.code, 0);
+  assert.match(filtered.out, /Route one call to the cheapest venue/);
+  assert.doesNotMatch(filtered.out, /Know what inference costs/);
+  assert.match((await run(['--help'])).out, /--markdown/);
+  assert.equal(fetches, 0);
+});

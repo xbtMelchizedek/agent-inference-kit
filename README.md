@@ -10,20 +10,20 @@ Small open-source tools for agents that pay for their own inference, in one plac
 npx -y github:xbtMelchizedek/agent-inference-kit
 ```
 
-This prints every tool by job, with its one-line command and today's number. Name a job (`prices`, `route`, `spend` or `flop`) to see only that job's tools, and add `--json` for machine-readable output.
+This prints every tool by job, with its one-line command and today's number. Name a job (`prices`, `route`, `spend` or `flop`) to see only that job's tools, and add `--json` for machine-readable output. Use `--markdown` to print the tool table without fetching live numbers.
 
 ## The tools
 
 | Job | Tool | One line |
 |---|---|---|
 | Know what inference costs | [justweight](https://github.com/xbtMelchizedek/justweight) | `npx -y github:xbtMelchizedek/justweight tiers` |
-| | [agent-price-feed](https://github.com/xbtMelchizedek/agent-price-feed) | `npx -y github:xbtMelchizedek/agent-price-feed events --kind price-drop,cheapest-change` |
+|  | [agent-price-feed](https://github.com/xbtMelchizedek/agent-price-feed) | `npx -y github:xbtMelchizedek/agent-price-feed events --kind price-drop,cheapest-change` |
 | Route one call to the cheapest venue | [justweight infer](https://github.com/xbtMelchizedek/justweight#infer-route-one-call-with-caps-and-a-receipt) | `npx -y -p github:xbtMelchizedek/justweight justweight-mcp` |
-| Spend without overspending | [agent-spendcap](https://github.com/xbtMelchizedek/agent-spendcap) | `curl -s …/examples/policy.json \| npx -y github:xbtMelchizedek/agent-spendcap authorize --policy /dev/stdin …` |
-| | [agent-cost-proxy](https://github.com/xbtMelchizedek/agent-cost-proxy) | `npx -y github:xbtMelchizedek/agent-cost-proxy` |
-| | [x402-price-check](https://github.com/xbtMelchizedek/x402-price-check) | `npx -y github:xbtMelchizedek/x402-price-check demo` |
+| Spend without overspending | [agent-spendcap](https://github.com/xbtMelchizedek/agent-spendcap) | `curl -s https://raw.githubusercontent.com/xbtMelchizedek/agent-spendcap/main/examples/policy.json \| npx -y github:xbtMelchizedek/agent-spendcap authorize --policy /dev/stdin --venue openrouter:pearl-research/fp8 --model qwen/qwen3.8-27b --usd 0.004 --privacy no-retention` |
+|  | [agent-cost-proxy](https://github.com/xbtMelchizedek/agent-cost-proxy) | `npx -y github:xbtMelchizedek/agent-cost-proxy` |
+|  | [x402-price-check](https://github.com/xbtMelchizedek/x402-price-check) | `npx -y github:xbtMelchizedek/x402-price-check demo` |
 | Prove and track Flop compute spend | [flop-receipt-root](https://github.com/xbtMelchizedek/flop-receipt-root) | `npx -y github:xbtMelchizedek/flop-receipt-root build --network devnet --last 3600 --out epoch.json` |
-| | [flop-spend](https://github.com/xbtMelchizedek/flop-spend) | `npx -y github:xbtMelchizedek/flop-spend has-spent <SS58 address>` |
+|  | [flop-spend](https://github.com/xbtMelchizedek/flop-spend) | `npx -y github:xbtMelchizedek/flop-spend has-spent 5GsXb3TmNGixuEsbtixqHnqWr9UQJ2M8bkqBQWteNekgF98S` |
 
 [kit.json](kit.json) is the source of truth, with the full commands, summaries and which live number each tool shows. The page and the CLI both read it. Each tool's README links here instead of keeping its own copy of the list. On 2026-11-24 every command was run from an empty directory, and each one ran.
 
@@ -62,6 +62,6 @@ npm install && npm test
 node scripts/build-web.mjs   # the Pages site, into _site
 ```
 
-9 tests, with no network. Dependency: justweight. See [SECURITY.md](SECURITY.md).
+The tests run without network access. Dependency: justweight. See [SECURITY.md](SECURITY.md).
 
 MIT. The page uses Arc UI foundation tokens (MIT, see `web/arc/LICENSE`).
