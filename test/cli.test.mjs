@@ -11,14 +11,29 @@ const CLI = new URL('../src/cli.mjs', import.meta.url).pathname;
 const TOKEN = 'test-token-not-real-91c2';
 const run = async (args, o = {}) => { const lines = []; const code = await main(args, { out: (s) => lines.push(s), env: {}, ...o }); return { code, out: lines.join('\n') }; };
 const snapFetch = async () => new Response(SNAP, { status: 200 });
+const SNAP_AT = Date.parse(JSON.parse(SNAP).generatedAt);
+const minutesLater = (minutes) => () => SNAP_AT + minutes * 60_000;
 
-test('lists tools by job with live numbers', async () => {
+test('lists tools by job with live numbers', async (t) => {
+  t.mock.method(Date, 'now', minutesLater(12));
   const r = await run([], { fetchImpl: snapFetch });
   assert.equal(r.code, 0);
   assert.match(r.out, /^agent inference kit · https:\/\/xbtmelchizedek\.github\.io\/agent-inference-kit\//);
   assert.match(r.out, /Spend without overspending\n {2}agent-spendcap: /);
   assert.match(r.out, /\$ npx -y github:xbtMelchizedek\/x402-price-check demo\n {4}now: a fair x402 quote/);
-  assert.match(r.out, /live numbers: justweight snapshot 2026-11-24T21:15:08\.951Z$/);
+  assert.match(r.out, /live numbers: justweight snapshot 2026-11-24T21:15:08\.951Z · 12 min ago$/);
+});
+
+test('marks aged live numbers stale after, but not at, six hours', async (t) => {
+  const clock = t.mock.method(Date, 'now', minutesLater(360));
+  const exact = await run(['spend'], { fetchImpl: snapFetch });
+  assert.doesNotMatch(exact.out, /\(stale\)/);
+
+  clock.mock.mockImplementation(minutesLater(361));
+  const aged = await run(['spend'], { fetchImpl: snapFetch });
+  assert.equal(aged.code, 0);
+  assert.match(aged.out, /now: [^\n]+ \(stale\)/);
+  assert.match(aged.out, /6 h 1 min ago \(stale\)$/);
 });
 
 test('job filter, --offline, --json, errors', async () => {

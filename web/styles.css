@@ -58,5 +58,6 @@ textarea { min-height: 140px; }
 .cmd code { flex: 1; min-width: 0; font-size: 13px; word-break: break-all; }
 .copy { padding: 4px 12px; font-size: 13px; flex: none; }
 .live { color: var(--text-secondary); font-size: 14px; }
+.live.stale { opacity: 0.82; }
 #jobnav { margin: 0; }
 #jobnav a { font-size: 14px; padding: 6px 12px; border: 1px solid var(--border); border-radius: 999px; text-decoration: none; }
