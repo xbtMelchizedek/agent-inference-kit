@@ -1,4 +1,4 @@
-import { metricsFor } from './lib/metrics.mjs';
+import { metricsFor, snapshotAge } from './lib/metrics.mjs';
 
 const $ = (id) => document.getElementById(id);
 const el = (tag, text, cls) => { const e = document.createElement(tag); if (text !== undefined) e.textContent = text; if (cls) e.className = cls; return e; };
@@ -69,6 +69,17 @@ try {
   const snap = await r.json();
   render(kit, metricsFor(kit, snap));
   $('snapnote').textContent = `Live numbers: justweight snapshot ${snap.generatedAt.replace('T', ' ').slice(0, 16)} UTC`;
+  const age = snapshotAge(snap.generatedAt);
+  $('snapnote').textContent += ` · ${age.label}${age.stale ? ' (stale)' : ''}`;
+  if (age.stale) {
+    for (const live of document.querySelectorAll('.tool .live')) {
+      live.classList.add('stale');
+      const badge = live.querySelector('.badge');
+      badge.classList.remove('info', 'neutral');
+      badge.classList.add('warning');
+      badge.lastChild.textContent = 'stale';
+    }
+  }
 } catch (e) {
   $('snapnote').textContent = `Live numbers unavailable (${e.message})`;
 }

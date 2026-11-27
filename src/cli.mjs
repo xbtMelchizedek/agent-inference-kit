@@ -2,7 +2,7 @@
 // agent-inference-kit: the kit's tools by job, each with its one-line command and a live number.
 import { readFileSync, realpathSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { metricsFor } from './metrics.mjs';
+import { metricsFor, snapshotAge } from './metrics.mjs';
 import { traction, tractionTable, reposOf } from './traction.mjs';
 
 const KIT = JSON.parse(readFileSync(new URL('../kit.json', import.meta.url), 'utf8'));
@@ -38,22 +38,23 @@ export async function main(argv, { out = console.log, env = process.env, fetchIm
         if (!r.ok) throw new Error(`HTTP ${r.status}`);
         snap = await r.json();
         metrics = metricsFor(KIT, snap);
-        note = `live numbers: justweight snapshot ${snap.generatedAt}`;
+        note = `live numbers: justweight snapshot ${snap.generatedAt ?? 'unavailable'}`;
       } catch (e) { note = `live numbers unavailable (${e.message})`; }
     }
     const tools = Object.fromEntries(KIT.tools.map((t) => [t.id, t]));
     if (flags.has('--json')) { out(JSON.stringify({ page: KIT.page, snapshotAt: snap?.generatedAt ?? null, jobs: jobs.map((j) => ({ ...j, tools: j.tools.map((id) => ({ ...tools[id], live: metrics[id] ?? null })) })) }, null, 1)); return 0; }
+    const age = snapshotAge(snap?.generatedAt);
     const lines = [`agent inference kit · ${KIT.page}`, ''];
     for (const j of jobs) {
       lines.push(`${j.title}`);
       for (const id of j.tools) {
         const t = tools[id];
         lines.push(`  ${t.name}: ${t.summary}`, `    $ ${t.run}`);
-        if (metrics[id]) lines.push(`    now: ${metrics[id].text}`);
+        if (metrics[id]) lines.push(`    now: ${metrics[id].text}${age.stale ? ' (stale)' : ''}`);
       }
       lines.push('');
     }
-    lines.push(note);
+    lines.push(snap ? `${note} · ${age.label}${age.stale ? ' (stale)' : ''}` : note);
     out(lines.join('\n'));
     return 0;
   } catch (e) {

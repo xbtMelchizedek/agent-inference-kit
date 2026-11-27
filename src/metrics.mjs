@@ -4,6 +4,16 @@ import { canonicalModel, costOf, medianFixed, fromFixed } from 'justweight/core'
 const FIXED_PER_NANO = 10n ** 15n; // justweight fixed point 1e-24 USD -> nano-USD
 const DEC = /^\d+(\.\d{1,9})?$/;
 
+/** Age of a published snapshot. A missing, invalid or future timestamp has unknown age. */
+export function snapshotAge(generatedAt, now = Date.now()) {
+  const elapsed = now - Date.parse(generatedAt);
+  if (!Number.isFinite(elapsed) || elapsed < 0) return { label: 'age unknown', stale: false };
+  const minutes = Math.floor(elapsed / 60_000);
+  const hours = Math.floor(minutes / 60);
+  const label = hours ? `${hours} h${minutes % 60 ? ` ${minutes % 60} min` : ''} ago` : `${minutes} min ago`;
+  return { label, stale: elapsed > 6 * 60 * 60_000 };
+}
+
 /** justweight's model key, plus Anthropic API ids ("claude-sonnet-5-5-20261001" -> "claude-sonnet-5.5"). */
 export function modelKey(id) {
   let k = canonicalModel(id).key;
