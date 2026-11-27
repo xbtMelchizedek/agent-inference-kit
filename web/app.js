@@ -11,9 +11,17 @@ function copyButton(text) {
   return b;
 }
 
-function render(kit, metrics) {
+function updateLiveNumber(live, metric) {
+  const badge = el('span', undefined, `badge ${metric && metric.value !== null ? 'info' : 'neutral'}`);
+  badge.append(el('span', undefined, 'badge-dot'), 'now');
+  live.replaceChildren(badge, ' ', metric ? metric.text : 'live number loading…');
+}
+
+function render(kit) {
   const tools = Object.fromEntries(kit.tools.map((t) => [t.id, t]));
   const jobs = $('jobs'); const nav = $('jobnav');
+  const liveNumbers = new Map();
+  const anchors = new Set(kit.jobs.map((job) => job.id));
   jobs.replaceChildren(); nav.replaceChildren();
   for (const j of kit.jobs) {
     nav.append(link(`#${j.id}`, j.title));
@@ -22,20 +30,24 @@ function render(kit, metrics) {
     for (const id of j.tools) {
       const t = tools[id];
       const card = el('article', undefined, 'tool');
+      if (!anchors.has(t.id)) {
+        card.id = t.id;
+        anchors.add(t.id);
+      }
       const h = el('h3'); h.append(link(t.page, t.name), ' ', link(`https://github.com/${t.repo}`, 'repo'));
       card.append(h, el('p', t.summary));
       const cmd = el('div', undefined, 'cmd'); cmd.append(el('code', t.run), copyButton(t.run));
       card.append(cmd);
-      const m = metrics?.[id];
       const live = el('p', undefined, 'live');
-      const badge = el('span', undefined, `badge ${m && m.value !== null ? 'info' : 'neutral'}`);
-      badge.append(el('span', undefined, 'badge-dot'), 'now');
-      live.append(badge, ' ', m ? m.text : 'live number loading…');
+      updateLiveNumber(live);
+      if (!liveNumbers.has(id)) liveNumbers.set(id, []);
+      liveNumbers.get(id).push(live);
       card.append(live);
       sec.append(card);
     }
     jobs.append(sec);
   }
+  return liveNumbers;
 }
 
 async function traction(kit) {
@@ -60,14 +72,29 @@ async function traction(kit) {
   $('tracnote').textContent = `Stars and forks are live from the GitHub API${live.some((x) => !x) ? ' (some requests were rate-limited; those show the baseline)' : ''}. Views and clones are the last 14 days as GitHub reported them at ${base ? base.at.replace('T', ' ').slice(0, 16) + ' UTC' : 'no baseline yet'}; they need a token, so they are refreshed with \`npx -y github:xbtMelchizedek/agent-inference-kit traction\`. ${base?.pages ?? ''}`;
 }
 
+let linkedTool = null;
+function openFragment(scroll = false) {
+  const target = document.getElementById(location.hash.slice(1));
+  linkedTool?.classList.remove('linked-tool');
+  linkedTool = target?.matches('article.tool') ? target : null;
+  linkedTool?.classList.add('linked-tool');
+  if (scroll) target?.scrollIntoView({ block: 'start' });
+}
+
 const kit = await (await fetch('kit.json')).json();
-render(kit, null);
+const liveNumbers = render(kit);
+// The initial fragment is resolved only after the requested card exists.
+openFragment(true);
+window.addEventListener('hashchange', () => openFragment());
 traction(kit);
 try {
   const r = await fetch(kit.snapshot);
   if (!r.ok) throw new Error(`HTTP ${r.status}`);
   const snap = await r.json();
-  render(kit, metricsFor(kit, snap));
+  const metrics = metricsFor(kit, snap);
+  for (const [id, labels] of liveNumbers) {
+    for (const label of labels) updateLiveNumber(label, metrics[id]);
+  }
   $('snapnote').textContent = `Live numbers: justweight snapshot ${snap.generatedAt.replace('T', ' ').slice(0, 16)} UTC`;
 } catch (e) {
   $('snapnote').textContent = `Live numbers unavailable (${e.message})`;
