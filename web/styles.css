@@ -60,3 +60,17 @@ textarea { min-height: 140px; }
 .live { color: var(--text-secondary); font-size: 14px; }
 #jobnav { margin: 0; }
 #jobnav a { font-size: 14px; padding: 6px 12px; border: 1px solid var(--border); border-radius: 999px; text-decoration: none; }
+
+.tool[id] { scroll-margin-block-start: 1rem; }
+.tool.linked-tool {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+  animation: tool-highlight 1.8s ease-out forwards;
+}
+@keyframes tool-highlight {
+  60% { outline-color: var(--accent); }
+  to { outline-color: transparent; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tool.linked-tool { animation: none; }
+}
